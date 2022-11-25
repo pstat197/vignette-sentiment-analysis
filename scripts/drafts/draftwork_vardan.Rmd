@@ -1,0 +1,102 @@
+---
+title: "draftwork_vardan"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For this lab, we will be exploring the topic of sentiment analysis. Our dataset comes from Kaggle (in particular, it was sourced by Andrew Maas from Stanford). More information about the dataset can be found here: https://ai.stanford.edu/~amaas/data/sentiment/. The dataset contains 50,000 highly polarized movie reviews, along with their sentinment classifications (ie, positive or negative). We first load in the data as follows:
+
+```{r}
+#loading in the dataset.
+dataset <- read.csv("/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv")
+```
+
+Additionally, we load in packages that we will be using throughout the vignette.
+```{r}
+library(tidyverse)
+library(tidytext)
+library(tidymodels)
+library(tokenizers)
+library(textstem)
+library(stopwords)
+```
+
+
+
+\section*{Data Exploration and Cleaning}
+
+Let us examine the first few entries of the dataset to get a feel for what it looks like.
+```{r}
+head(dataset)
+```
+
+This doesn't seem to tell us much about the dataset itself, just that there seem to be movie reviews, and pre-determined sentiments about each of the reviews. Let us look deeper at the observation of just one of the reviews to see what a review looks like.
+
+```{r}
+head(dataset$review, 1)
+```
+
+From this, we can see that these are indeed movie reviews: in fact, they seem to be quite detailed. We can see line breaks, punctuation, and nuance within the text themselves. One thing that would be interesting to find out is how long each review is on average (by the number of characters). We do this as follows using the sum() function and the nchar() function.
+```{r}
+#Summing up the total number characters in each movie review, then dividing by 50,000 (the total number of reviews in our dataset). 
+sum(nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))/50000
+```
+It seems that each review seems to have a decent amount of characters(and in turn, words) in them! In fact, since there are 6.5 characters in a word on average, we see that there are around 200 words per review in our dataset. However, one thing to note is that this data is not yet cleaned. Let us clean the data by removing all of the punctuation, breaks, and other miscellaneous terms in order to have a cleaned dataset. 
+```{r}
+#Creating several wrapper functions to clean up the data.
+
+#This first function removes the "<br />" terms from the text, as these are not words.
+clean_fn <- function(.text){
+  str_replace_all(.text, "<br />", " ") %>% tolower()
+}
+
+#This function removes all punctuation. 
+clean_fn2 <- function(.text){
+  str_remove_all(.text, '[[:punct:]]') %>%
+    tolower()
+}
+
+#Applying this function to all of the reviews in our dataset.
+dataset_clean <- dataset %>%
+  mutate(review = clean_fn(review)) %>%
+  mutate(review = clean_fn2(review))
+```
+
+Let us then look at the text of the first review again to see if it has been cleaned to our specification.
+
+```{r}
+head(dataset_clean$review, 1)
+```
+
+It looks like we have a clean dataset that we can now work with! From this, we can now prepare the data for the building of the machine learning models that we will use for sentiment analysis. We will first add an .id column for each of the reviews (so that we can reference them later for checking if our predictions were correct), 
+
+```{r}
+#Adding a column with id's for each observation.
+dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
+
+#Setting the seed for reproducibility.
+set.seed(69)
+
+#Splitting the dataset into a training and testing set.
+dataset_split <- initial_split(dataset_clean, prop = 0.8)
+
+#Assigning the training/test partitions.
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
+```
+
+From here, we can now start building the sentiment analysis models.
+
+
+\section*{Sentiment Analysis Model I}
+
+
+
+
+
+
