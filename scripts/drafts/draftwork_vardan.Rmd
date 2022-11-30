@@ -73,11 +73,15 @@ Let us then look at the text of the first review again to see if it has been cle
 head(dataset_clean$review, 1)
 ```
 
-It looks like we have a clean dataset that we can now work with! From this, we can now prepare the data for the building of the machine learning models that we will use for sentiment analysis. We will first add an .id column for each of the reviews (so that we can reference them later for checking if our predictions were correct), 
+It looks like we have a clean dataset that we can now work with! From this, we can now prepare the data for the building of the machine learning models that we will use for sentiment analysis. We will first add an .id column for each of the reviews (so that we can reference them later for checking if our predictions were correct). We will also add a column that contains the length of each review, so that we can use it as a predictor later on.
 
 ```{r}
 #Adding a column with id's for each observation.
 dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
+
+#Adding a column with the lengths of each review for each observation.
+dataset_clean <- dataset_clean %>%
+  mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
 
 #Setting the seed for reproducibility.
 set.seed(69)
