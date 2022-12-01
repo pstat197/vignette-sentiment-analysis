@@ -1,0 +1,25 @@
+# Sentiment Analysis
+
+## Introduction
+
+### Four Sentiment Lexicon Libraries
+
+Sentiment Lexicons are used to label a single word with a positive, negative, or neutral connotation. The way that the four datasets approach this classification is different.
+
+#### [AFINN](https://github.com/fnielsen/afinn)
+
+Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
+
+#### Bing
+
+Assigns one single word with "positive" or "negative".
+
+#### [NRC](https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm)
+
+Similar to bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
+
+#### Loughrin
+
+## Single Decision Tree Model
+
+## Findings
