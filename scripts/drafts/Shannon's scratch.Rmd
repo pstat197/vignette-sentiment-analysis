@@ -1,0 +1,93 @@
+---
+title: "Shannon's scratch"
+author: "Shannon Rumsey"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The sentiment lexicon datasets:
+Sentiment Lexicons are used to label a single word with a positive, negative, or neutral connotation. The way that the three datasets approach this is different.
+
+Bing
+Assigns one single word with "positive" or "negative"
+
+
+AFINN
+Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
+
+
+nrc source:https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm
+Similar to bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
+
+
+Loughrin
+
+
+
+```{r}
+library(tidyverse)
+dataset <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/IMDB-raw.csv")
+
+sum(nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))/50000
+
+#Creating several wrapper functions to clean up the data.
+
+#This first function removes the "<br />" terms from the text, as these are not words.
+clean_fn <- function(.text){
+  str_replace_all(.text, "<br />", " ") %>% tolower()
+}
+
+#This function removes all punctuation. 
+clean_fn2 <- function(.text){
+  str_remove_all(.text, '[[:punct:]]') %>%
+    tolower()
+}
+
+#Applying this function to all of the reviews in our dataset.
+dataset_clean <- dataset %>%
+  mutate(review = clean_fn(review)) %>%
+  mutate(review = clean_fn2(review))
+
+dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
+
+colnames(dataset_clean)[3] = "answer"
+```
+
+```{r}
+library(tidytext)
+library(textdata)
+# matches words in reviews with words in afinn library
+# provides an afinn score for each individual word
+dataset_tokens <- dataset_clean %>% 
+  unnest_tokens(word, review) %>%
+  anti_join(get_stopwords()) %>%
+  inner_join(get_sentiments("afinn")) # to use another sentiment library, replace "afinn"
+
+# calculates the mean of afinn score by id
+afinn_scores <- dataset_tokens %>%
+  group_by(.id) %>%
+  summarize(afinn_score = mean(value))
+
+merge(dataset_clean, afinn_scores, by = ".id")
+  
+  
+```
+
+```{r}
+set.seed(27)
+
+#Splitting the dataset into a training and testing set.
+dataset_split <- initial_split(dataset_clean, prop = 0.8)
+
+#Assigning the training/test partitions.
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
+```
+
+
+Idea: Can we predict the sentiment of a review left on IMBD?
+
