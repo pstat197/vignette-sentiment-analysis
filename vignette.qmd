@@ -1,3 +1,7 @@
+---
+bibliography: references.bib
+---
+
 # Sentiment Analysis
 
 ## Introduction
@@ -10,16 +14,50 @@ Sentiment Lexicons are used to label a single word with a positive, negative, or
 
 Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
 
-#### Bing
+```{r}
+library(textdata)
+library(tidytext)
+get_sentiments("afinn")
+```
 
-Assigns one single word with "positive" or "negative".
+#### [Bing](https://emilhvitfeldt.github.io/textdata/reference/lexicon_bing.html)
 
-#### [NRC](https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm)
+Assigns "positive" or "negative". The most simple of the sentiment lexicon libraries.
+
+```{r}
+get_sentiments("bing")
+```
+
+#### [NRC](http://saifmohammad.com/WebPages/lexicons.html)
 
 Similar to bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
 
-#### Loughrin
+```{r}
+get_sentiments("nrc")
+```
 
-## Single Decision Tree Model
+#### [Loughran](https://emilhvitfeldt.github.io/textdata/reference/lexicon_loughran.html)
+
+Used primarily for financial terms. It takes into account financial words that may appear to be a certain sentiment in other libraries but in a financial context, may have a different meaning.
+
+```{r}
+get_sentiments("loughran")
+```
+
+### Objective
+
+In this vignette, we will be exploring the IMDB-raw dataset file. This dataset comprises of two columns, "review" and "sentiment". The "review" column is made up of reviews left on movies on the IMDB platform in the form of text data. The "sentiment" column is a binary score "positive" or "negative" that were labeled by hand. If a review is labeled as "negative" then it what is known as a "bad review" or a sub-par experience. If a review is labeled as "positive" then the reviewer had an enjoyable experience.
+
+For this experiment, we will be breaking apart the reviews into single words. From here, the words are associated with one score from each of the four libraries (AFINN, Bing, NRC, Loughran). Taking the most common sentiment, or, in the case of AFINN - the average value, we will obtain four overall average "sentiments" that summarize the reviews. One other predictor added is the length of the reviews as this may have had an impact in the hand-picked scores. In a sense, we are attempting to simulate the hand-picked sentiments.
+
+The four sentiments found will be used in a logistic model to predict how accurately they were at labeling the reviews. The predictions will be compared to the hand-picked values.
+
+### Exploratory Data Analysis
+
+```{r}
+dataset <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/IMDB-raw.csv")
+```
+
+## Logistic Regression Model
 
 ## Findings

@@ -70,3 +70,15 @@ bing_scores <- bing_tokens %>%
 
 # Merge with main dataset
 dataset_clean <- merge(dataset_clean, bing_scores, by = ".id")
+
+### Predicting Sentiment with Loughran ###
+dataset_loughran_tokens <- dataset_clean %>% 
+  unnest_tokens(word, review) %>%
+  anti_join(get_stopwords()) %>%
+  inner_join(get_sentiments("loughran"))
+
+loughran_scores <- dataset_loughran_tokens %>%
+  group_by(.id) %>%
+  summarize(loughran_score = max(sentiment))
+
+dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")

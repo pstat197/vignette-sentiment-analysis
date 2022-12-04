@@ -62,18 +62,28 @@ library(tidytext)
 library(textdata)
 # matches words in reviews with words in afinn library
 # provides an afinn score for each individual word
-dataset_tokens <- dataset_clean %>% 
+dataset_afinn_tokens <- dataset_clean %>% 
   unnest_tokens(word, review) %>%
   anti_join(get_stopwords()) %>%
   inner_join(get_sentiments("afinn")) # to use another sentiment library, replace "afinn"
 
 # calculates the mean of afinn score by id
-afinn_scores <- dataset_tokens %>%
+afinn_scores <- dataset_afinn_tokens %>%
   group_by(.id) %>%
   summarize(afinn_score = mean(value))
 
-merge(dataset_clean, afinn_scores, by = ".id")
-  
+dataset_clean <- merge(dataset_clean, afinn_scores, by = ".id")
+
+dataset_loughran_tokens <- dataset_clean %>% 
+  unnest_tokens(word, review) %>%
+  anti_join(get_stopwords()) %>%
+  inner_join(get_sentiments("loughran"))
+
+loughran_scores <- dataset_loughran_tokens %>%
+  group_by(.id) %>%
+  summarize(loughran_score = max(sentiment))
+
+dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
   
 ```
 
