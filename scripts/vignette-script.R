@@ -38,6 +38,9 @@ dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
 dataset_clean <- dataset_clean %>%
   mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
 
+# writing to a csv file
+write_csv(dataset_clean, file = "/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/dataset_clean.csv")
+
 ### Predictors ###
 # matches words in reviews with words in afinn library
 # provides an afinn score for each individual word
@@ -82,3 +85,16 @@ loughran_scores <- dataset_loughran_tokens %>%
   summarize(loughran_score = max(sentiment))
 
 dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
+
+### Predicting sentiment with NRC ###
+
+dataset_nrc_tokens <- dataset_clean %>% 
+  unnest_tokens(word, review) %>%
+  anti_join(get_stopwords()) %>%
+  inner_join(get_sentiments("nrc"))
+
+nrc_scores <- dataset_nrc_tokens %>%
+  group_by(.id) %>%
+  summarize(nrc_score = max(sentiment))
+
+dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")

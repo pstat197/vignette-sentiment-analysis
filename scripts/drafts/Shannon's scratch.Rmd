@@ -84,6 +84,18 @@ loughran_scores <- dataset_loughran_tokens %>%
   summarize(loughran_score = max(sentiment))
 
 dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
+
+# calculates the mean of NRC score by id
+dataset_nrc_tokens <- dataset_clean %>% 
+  unnest_tokens(word, review) %>%
+  anti_join(get_stopwords()) %>%
+  inner_join(get_sentiments("nrc"))
+
+nrc_scores <- dataset_nrc_tokens %>%
+  group_by(.id) %>%
+  summarize(nrc_score = max(sentiment))
+
+dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")
   
 ```
 
