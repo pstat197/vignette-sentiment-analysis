@@ -7,7 +7,7 @@ library(stopwords)
 library(textdata)
 
 # loading in the dataset.
-dataset <- read.csv("/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv")
+dataset <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/IMDB-raw.csv")
 
 ### Functions for Text Cleaning ###
 
@@ -34,14 +34,18 @@ dataset_clean <- dataset %>%
 # Adding a column with id's for each observation.
 dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
 
+write.csv(dataset_clean, file = "/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/dataset_clean.csv")
+
 # Adding a column with the lengths of each review for each observation.
 dataset_clean <- dataset_clean %>%
   mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
 
-# writing to a csv file
-write_csv(dataset_clean, file = "/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/dataset_clean.csv")
-
 ### Predictors ###
+
+#Adding a column with the lengths of each review for each observation.
+dataset_clean <- dataset_clean %>%
+  mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
+
 # matches words in reviews with words in afinn library
 # provides an afinn score for each individual word
 dataset_tokens <- dataset_clean %>% 

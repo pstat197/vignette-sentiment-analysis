@@ -1,7 +1,3 @@
----
-bibliography: references.bib
----
-
 # Sentiment Analysis
 
 ## Introduction
@@ -10,7 +6,7 @@ bibliography: references.bib
 
 Sentiment Lexicons are used to label a single word with a positive, negative, or neutral connotation. The way that the four datasets approach this classification is different.
 
-#### [AFINN](https://github.com/fnielsen/afinn)
+#### AFINN
 
 Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
 
@@ -20,7 +16,7 @@ library(tidytext)
 get_sentiments("afinn")
 ```
 
-#### [Bing](https://emilhvitfeldt.github.io/textdata/reference/lexicon_bing.html)
+#### Bing
 
 Assigns "positive" or "negative". The most simple of the sentiment lexicon libraries.
 
@@ -28,7 +24,7 @@ Assigns "positive" or "negative". The most simple of the sentiment lexicon libra
 get_sentiments("bing")
 ```
 
-#### [NRC](http://saifmohammad.com/WebPages/lexicons.html)
+#### NRC
 
 Similar to bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
 
@@ -36,7 +32,7 @@ Similar to bing in that it assigns one single word into a category but instead o
 get_sentiments("nrc")
 ```
 
-#### [Loughran](https://emilhvitfeldt.github.io/textdata/reference/lexicon_loughran.html)
+#### Loughran
 
 Used primarily for financial terms. It takes into account financial words that may appear to be a certain sentiment in other libraries but in a financial context, may have a different meaning.
 
@@ -52,10 +48,6 @@ For this experiment, we will be breaking apart the reviews into single words. Fr
 
 The four sentiments found will be used in a logistic model to predict how accurately they were at labeling the reviews. The predictions will be compared to the hand-picked values.
 
-### Exploratory Data Analysis
-
-## Logistic Regression Model
-
 ### Load Packages and Data
 
 ```{r}
@@ -66,14 +58,23 @@ library(tokenizers)
 library(textstem)
 library(stopwords)
 library(textdata)
+library(dplyr)
+library(corrplot)
 ```
 
 ```{r}
 # loading in the dataset.
-dataset <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis")
+dataset_clean <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/dataset_clean.csv")
 ```
 
-### Creation of Predcitors
+### Creation of Predictors
+
+```{r}
+#Adding a column with the lengths of each review for each observation.
+dataset_clean <- dataset_clean %>%
+  mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
+
+```
 
 ```{r}
 # matches words in reviews with words in afinn library
@@ -128,7 +129,6 @@ dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
 
 ```{r}
 ### Predicting sentiment with NRC ###
-
 dataset_nrc_tokens <- dataset_clean %>% 
   unnest_tokens(word, review) %>%
   anti_join(get_stopwords()) %>%
@@ -142,4 +142,16 @@ dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")
 
 ```
 
-## Findings
+```{r}
+dataset <- dataset_clean %>%
+  select(c(.id, length, afinn_score, nrc_score, bing_score, loughran_score, sentiment))
+```
+
+### Exploratory Data Analysis
+
+```{r}
+length <- dataset$length
+afinn_score <- dataset$afinn_score
+corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
+
+```
