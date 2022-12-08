@@ -73,8 +73,9 @@ library(corrplot)
 We can then load in the dataset as follows:
 
 ```{r}
-# loading in the dataset.
-dataset <- read.csv("/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv")
+# loading in the dataset
+# make sure to set working directory to folder containing vignette
+dataset <- read.csv("data/IMDB-raw.csv")
 ```
 
 
@@ -114,7 +115,7 @@ Finally, we can add an 'id' column to our dataset, and write the cleaned dataset
 dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
 
 #writing the data.
-write.csv(dataset_clean, file = "/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-clean.csv")
+write.csv(dataset_clean, file = "data/IMDB-clean.csv")
 ```
 
 This ends the cleaning of our dataset, and we now have a dataset ready for use!
