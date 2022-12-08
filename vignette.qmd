@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ### Sentiment Analysis and Lexicons 
 
-Sentiment analysis (also called opinion mining) is the process of analyzing text to understand its sentiment. One of the most common ways to accomplish this is to consider a text as the sum of the sentiments of its individual words. This is similar to how humans use their understanding of the emotional intent of words to infer whether a text is positive or negative. 
+Sentiment analysis (also called opinion mining) is the process of analyzing text to understand its sentiment. This can be useful in evaluating the sentiment of product reviews, social media posts, and more without having to read them ourselves. One of the most common ways to accomplish this is to consider a text as the sum of the sentiments of its individual words. This is similar to how humans use their understanding of the emotional intent of words to infer whether a text is positive or negative. 
 
 There exist various lexicons (or dictionaries) that are used to evaluate the emotion of a text and label them as positive, negative, or even neutral. They usually analyze text as unigrams. These lexicons contain many English words and their associated scores or labels for positive/negative sentiment or for emotions such as happiness, anger, etc. We will utilize four lexicons: AFINN, Bing, NRC, and Loughran. 
 
