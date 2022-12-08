@@ -6,6 +6,8 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 # Sentiment Analysis
 
+#### By Vardan Martirosyan, Raymond Lee, Piero Trujillo, Shannon Rumsey, Yutong Wang
+
 ## Introduction
 
 ### Sentiment Analysis and Lexicons 
@@ -19,6 +21,7 @@ There exist various lexicons (or dictionaries) that are used to evaluate the emo
 Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
 
 ```{r}
+.libPaths("C:/Users/tommy/AppData/Local/R/win-library/4.2")
 library(textdata)
 library(tidytext)
 get_sentiments("afinn")
@@ -29,15 +32,17 @@ get_sentiments("afinn")
 Assigns "positive" or "negative". The most simple of the sentiment lexicon libraries.
 
 ```{r}
-get_sentiments("bing")
+bing <- get_sentiments("bing")
+bing
 ```
 
 #### NRC
 
-Similar to bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
+Similar to Bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
 
 ```{r}
-get_sentiments("nrc")
+nrc <- get_sentiments("nrc")
+nrc
 ```
 
 #### Loughran
@@ -45,7 +50,8 @@ get_sentiments("nrc")
 Used primarily for financial terms. It takes into account financial words that may appear to be a certain sentiment in other libraries but in a financial context, may have a different meaning.
 
 ```{r}
-get_sentiments("loughran")
+loughran<-get_sentiments("loughran")
+loughran
 ```
 
 ### Objective
@@ -87,9 +93,9 @@ We then want to clean the dataset so that we can build a model with it. We first
 
 # Creating several wrapper functions to clean up the data.
 
-# This first function removes the "<br />" terms from the text, as these are not words.
+# This first function removes the "<br />" terms from the text, as these are not words. It also sets everything to lower case so that we have a unified format to work with. 
 clean_fn <- function(.text){
-  str_replace_all(.text, "<br />", " ") %>% tolower()
+  str_replace_all(.text, "<br />", "") %>% tolower()
 }
 
 # This function removes all punctuation. 
@@ -123,7 +129,7 @@ This ends the cleaning of our dataset, and we now have a dataset ready for use!
 
 ### Creation of Predictors
 
-In this section, we will add five predictors to the dataset, with one predictor being the length of the review, and the other four predictors being the sentiments of each review described above. We start by adding the length as follows:
+In this section, we will add five predictors to the dataset, with one predictor being the length of the review, and the other four predictors being the sentiments of each review that will be obtained from the lexicons we've mentioned above. We start by adding the length as follows:
 
 ```{r}
 #Adding a column with the lengths of each review for each observation.
@@ -137,15 +143,21 @@ Then, we will compute the 'afinn' sentiment for each review and put it into the 
 ```{r}
 # matches words in reviews with words in afinn library
 # provides an afinn score for each individual word
-dataset_tokens <- dataset_clean %>% 
+afinn_tokens <- dataset_clean %>% 
   unnest_tokens(word, review) %>%
   anti_join(get_stopwords()) %>%
-  inner_join(get_sentiments("afinn"))
+  full_join(get_sentiments("afinn"))
+
+#Assign a score of 0 for the words that are not included by the lexicon
+afinn_tokens$value[is.na(afinn_tokens$value)] <- 0
 
 # calculates the mean of afinn score by id
-afinn_scores <- dataset_tokens %>%
-  group_by(.id) %>%
-  summarize(afinn_score = mean(value))
+afinn_scores <- afinn_tokens %>%
+  group_by(.id) %>% 
+  summarize(afinn_score = mean(value[value!=0]))
+
+#Assign a score of 0 for the reviews that contains no word that are included by the lexicon
+afinn_scores$afinn_score[is.na(afinn_scores$afinn_score)] <- 0
 
 # merge with main dataset
 dataset_clean <- merge(dataset_clean, afinn_scores, by = ".id")
@@ -159,13 +171,20 @@ Next, we will compute the 'bing' sentiment for each review and put it into the d
 bing_tokens <- dataset_clean %>% 
   unnest_tokens(word, review) %>%
   anti_join(get_stopwords()) %>%
-  inner_join(get_sentiments("bing"))
+  full_join(get_sentiments("bing"))
+
+#Assign neutral for all the words that are not a part of the lexicon
+`%notin%` <- Negate(`%in%`)
+bing_tokens$sentiment[bing_tokens$word %notin% bing$word] <- "neutral"
 
 # Calculating Bing Sentiment
 # Joining by id and deciding sentiment based on the higher amount of positive or negative scores
 bing_scores <- bing_tokens %>%
   group_by(.id) %>%
-  summarize(bing_score = max(sentiment))
+  summarize(bing_score = max(sentiment[sentiment!="neutral"]))
+
+#Assign neutral for the reviews that includes no words that are in the lexicon
+bing_scores$bing_score[is.na(bing_scores$bing_score)] <- "neutral"
 
 # Merge with main dataset
 dataset_clean <- merge(dataset_clean, bing_scores, by = ".id")
@@ -175,15 +194,21 @@ dataset_clean <- merge(dataset_clean, bing_scores, by = ".id")
 Continuing onward, we will compute the 'Loughran' sentiment for each review and put it into the dataset as follows.
 
 ```{r}
-### Predicting Sentiment with Loughran ###
-dataset_loughran_tokens <- dataset_clean %>% 
+### Predicting Sentiment with Loughran
+loughran_tokens <- dataset_clean %>% 
   unnest_tokens(word, review) %>%
   anti_join(get_stopwords()) %>%
-  inner_join(get_sentiments("loughran"))
+  full_join(get_sentiments("loughran"))
 
-loughran_scores <- dataset_loughran_tokens %>%
+#Assign neutral for all the words that are not a part of the lexicon
+loughran_tokens$sentiment[loughran_tokens$word %notin% loughran$word] <- "neutral"
+# Joining by id and deciding sentiment based on the higher amount of positive or negative scores
+loughran_scores <- loughran_tokens %>%
   group_by(.id) %>%
-  summarize(loughran_score = max(sentiment))
+  summarize(loughran_score = max(sentiment[sentiment!="neutral"]))
+
+#Assign neutral for the reviews that includes no words that are in the lexicon
+loughran_scores$loughran_score[is.na(loughran_scores$loughran_score)] <- "neutral"
 
 dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
 
@@ -192,21 +217,28 @@ dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
 Finally, we will compute the 'NRC' sentiment for each review and put it into the dataset as follows.
 
 ```{r}
-### Predicting sentiment with NRC ###
-dataset_nrc_tokens <- dataset_clean %>% 
+### Predicting sentiment with NRC
+nrc_tokens <- dataset_clean %>% 
   unnest_tokens(word, review) %>%
   anti_join(get_stopwords()) %>%
-  inner_join(get_sentiments("nrc"))
+  full_join(get_sentiments("nrc"))
 
-nrc_scores <- dataset_nrc_tokens %>%
+#Assign neutral for all the words that are not a part of the lexicon
+nrc_tokens$sentiment[nrc_tokens$word %notin% nrc$word] <- "neutral"
+
+# Joining by id and deciding sentiment based on the higher amount of positive or negative scores
+nrc_scores <- nrc_tokens %>%
   group_by(.id) %>%
   summarize(nrc_score = max(sentiment))
+
+#Assign neutral for the reviews that includes no words that are in the lexicon
+nrc_scores$nrc_score[is.na(nrc_scores$nrc_score)] <- "neutral"
 
 dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")
 
 ```
 
-This concludes the construction of our cleaned dataset, as we now have all of the values that we want.
+This concludes the construction of our cleaned dataset, as we now have all of the predictors that we want.
 
 ### Building and Testing the Logistic Regression Model
 
@@ -286,6 +318,8 @@ These results seem to indicate that the predictors from the sentiment engines we
 #corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
 
 ```
-
+problems:
+Can't distinguish some words with different formats, like "lacks", lack is included in the lexicon but lacks is not
+Scary when horror movie is bad
 
 
