@@ -1,3 +1,9 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
 # Sentiment Analysis
 
 ## Introduction
@@ -62,12 +68,59 @@ library(dplyr)
 library(corrplot)
 ```
 
+We can then load in the dataset as follows:
+
 ```{r}
 # loading in the dataset.
-dataset_clean <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/dataset_clean.csv")
+dataset <- read.csv("/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv")
 ```
 
+
+### Cleaning the Dataset
+
+We then want to clean the dataset so that we can build a model with it. We first call two cleaning functions that we will use.
+```{r}
+### Functions for Text Cleaning ###
+
+# Creating several wrapper functions to clean up the data.
+
+# This first function removes the "<br />" terms from the text, as these are not words.
+clean_fn <- function(.text){
+  str_replace_all(.text, "<br />", " ") %>% tolower()
+}
+
+# This function removes all punctuation. 
+clean_fn2 <- function(.text){
+  str_remove_all(.text, '[[:punct:]]') %>%
+    tolower()
+}
+```
+
+Having defined these functions, we can then clean our dataset as follows:
+
+```{r}
+# Applying this function to all of the reviews in our dataset.
+dataset_clean <- dataset %>%
+  mutate(review = clean_fn(review)) %>%
+  mutate(review = clean_fn2(review))
+```
+
+Finally, we can add an 'id' column to our dataset, and write the cleaned dataset to our 'data' folder for easy use later on.
+
+```{r}
+# Adding a column with id's for each observation.
+dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
+
+#writing the data.
+write.csv(dataset_clean, file = "/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-clean.csv")
+```
+
+This ends the cleaning of our dataset, and we now have a dataset ready for use!
+
+
 ### Creation of Predictors
+
+In this section, we will add five predictors to the dataset, with one predictor being the length of the review, and the other four predictors being the sentiments of each review described above. We start by adding the length as follows:
 
 ```{r}
 #Adding a column with the lengths of each review for each observation.
@@ -75,6 +128,8 @@ dataset_clean <- dataset_clean %>%
   mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
 
 ```
+
+Then, we will compute the 'afinn' sentiment for each review and put it into the dataset as follows.
 
 ```{r}
 # matches words in reviews with words in afinn library
@@ -92,6 +147,8 @@ afinn_scores <- dataset_tokens %>%
 # merge with main dataset
 dataset_clean <- merge(dataset_clean, afinn_scores, by = ".id")
 ```
+
+Next, we will compute the 'bing' sentiment for each review and put it into the dataset as follows.
 
 ```{r}
 # Uses the Bing library to categorize words into positive and negative categories
@@ -112,6 +169,8 @@ dataset_clean <- merge(dataset_clean, bing_scores, by = ".id")
 
 ```
 
+Continuing onward, we will compute the 'Loughran' sentiment for each review and put it into the dataset as follows.
+
 ```{r}
 ### Predicting Sentiment with Loughran ###
 dataset_loughran_tokens <- dataset_clean %>% 
@@ -126,6 +185,8 @@ loughran_scores <- dataset_loughran_tokens %>%
 dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
 
 ```
+
+Finally, we will compute the 'NRC' sentiment for each review and put it into the dataset as follows.
 
 ```{r}
 ### Predicting sentiment with NRC ###
@@ -142,16 +203,86 @@ dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")
 
 ```
 
+This concludes the construction of our cleaned dataset, as we now have all of the values that we want.
+
+### Building and Testing the Logistic Regression Model
+
+Having constructed our dataset, we can now build the logistic regression model, and test it's performance. First, let us set the seed, turn the 'sentinment' variable (the one we are trying to predict) into a factor (since it's currently a character vector), and split the data.
+
 ```{r}
-dataset <- dataset_clean %>%
-  select(c(.id, length, afinn_score, nrc_score, bing_score, loughran_score, sentiment))
+#Building the Logistic Regression Model
+#Setting the seed.
+set.seed(69)
+
+#turning sentiment into a factor so that we can actually predict it.
+dataset_clean$sentiment <- as.factor(dataset_clean$sentiment)
+
+#Reordering the factor so that 'Yes' is the first factor.
+dataset_clean$sentiment <- relevel(dataset_clean$sentiment, 'positive')
+
+
+
+#splitting the data.
+dataset_split <- initial_split(dataset_clean, prop = 0.70,
+                               strata = sentiment)
+
+#splitting the data into a training set and a testing set.
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
 ```
+
+Then, we can create the recipe using all of the predictors we added to our dataset above. Additionally, we will create the workflow and regression object at this time for our logistic regressoin model.
+
+```{r}
+#creating the recipe.
+dataset_recipe <- recipe(sentiment ~ length + afinn_score + bing_score
+                         + loughran_score + nrc_score, data = dataset_train)
+
+
+#creating the logistic regression object.
+log_reg <- logistic_reg() %>% 
+  set_engine("glm") %>% 
+  set_mode("classification")
+
+#creating the workflow.
+log_wkflow <- workflow() %>% 
+  add_model(log_reg) %>% 
+  add_recipe(dataset_recipe)
+```
+
+Finally, we can fit the model on the training data, then evaluate the performance (accuracy) of the model on the testing data as follows. We print out the accuracy at the end.
+
+```{r}
+#fitting the workflow with the object.
+log_fit <- fit(log_wkflow, dataset_train)
+
+#storing the accuracy of the logistic model on the testing data.
+log_reg_acc <- augment(log_fit, new_data = dataset_test) %>%
+  accuracy(truth = sentiment, estimate = .pred_class)
+```
+
+### Conclusion
+
+Let us check the results of our model from above.
+```{r}
+log_reg_acc
+```
+
+We note that with our predictors, we managed to attain a 100 percent accuracy with the model, which seems to indicate that there might be an issue with the model fit. Indeed, we note that when we ran the code, we were thrown a warning, which stated that the model fit was rank deficit. Changing the recipe in the code above reveals that we are thrown this error when 'loughran_score' is combined with at least one of the other score predictors. Excluding this predictor, we note that any combination of the other predictors always returns a 100 percent accuracy on the testing set, with the exception of the three following recipe combinations: 'sentiment ~ length', 'sentiment ~ length + affin_score', and 'sentiment ~ affin_score'. (These recipe combinations yield accuracies of 50, 75, and 75 percent on the testing dataset). 
+
+These results seem to indicate that the predictors from the sentinment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the expection of 'afinn', which by our discussion above does not perform as well.
+
+
+
 
 ### Exploratory Data Analysis
 
 ```{r}
-length <- dataset$length
-afinn_score <- dataset$afinn_score
-corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
+#length <- dataset$length
+#afinn_score <- dataset$afinn_score
+#corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
 
 ```
+
+
+

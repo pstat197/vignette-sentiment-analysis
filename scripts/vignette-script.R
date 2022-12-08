@@ -7,7 +7,7 @@ library(stopwords)
 library(textdata)
 
 # loading in the dataset.
-dataset <- read.csv("/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/IMDB-raw.csv")
+dataset <- read.csv("/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv")
 
 ### Functions for Text Cleaning ###
 
@@ -34,11 +34,7 @@ dataset_clean <- dataset %>%
 # Adding a column with id's for each observation.
 dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
 
-write.csv(dataset_clean, file = "/Users/shannon/Documents/PSTAT197/vignette-sentiment-analysis/data/dataset_clean.csv")
-
-# Adding a column with the lengths of each review for each observation.
-dataset_clean <- dataset_clean %>%
-  mutate(length = nchar(dataset$review, type = "chars", allowNA = FALSE, keepNA = NA))
+write.csv(dataset_clean, file = "/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-clean.csv")
 
 ### Predictors ###
 
@@ -102,3 +98,59 @@ nrc_scores <- dataset_nrc_tokens %>%
   summarize(nrc_score = max(sentiment))
 
 dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")
+
+
+
+
+#Building the Logistic Regression Model
+#Setting the seed.
+set.seed(69)
+
+#turning sentiment into a factor so that we can actually predict it.
+dataset_clean$sentiment <- as.factor(dataset_clean$sentiment)
+
+#Reordering the factor so that 'Yes' is the first factor.
+dataset_clean$sentiment <- relevel(dataset_clean$sentiment, 'positive')
+
+
+
+#splitting the data.
+dataset_split <- initial_split(dataset_clean, prop = 0.70,
+                               strata = sentiment)
+
+#splitting the data into a training set and a testing set.
+dataset_train <- training(dataset_split)
+dataset_test <- testing(dataset_split)
+
+#creating the recipe.
+dataset_recipe <- recipe(sentiment ~ length + afinn_score + bing_score
+                         + loughran_score + nrc_score, data = dataset_train)
+
+
+#creating the logistic regression object.
+log_reg <- logistic_reg() %>% 
+  set_engine("glm") %>% 
+  set_mode("classification")
+
+#creating the workflow.
+log_wkflow <- workflow() %>% 
+  add_model(log_reg) %>% 
+  add_recipe(dataset_recipe)
+
+#fitting the workflow with the object.
+log_fit <- fit(log_wkflow, dataset_train)
+
+#storing the accuracy of the logistic model on the testing data.
+log_reg_acc <- augment(log_fit, new_data = dataset_test) %>%
+  accuracy(truth = sentiment, estimate = .pred_class)
+
+
+
+
+
+
+
+
+
+
+

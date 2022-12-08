@@ -116,7 +116,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3 class="anchored" data-anchor-id="four-sentiment-lexicon-libraries">Four Sentiment Lexicon Libraries</h3>
 <p>Sentiment Lexicons are used to label a single word with a positive, negative, or neutral connotation. The way that the four datasets approach this classification is different.</p>
 <section id="afinn" class="level4">
-<h4 class="anchored" data-anchor-id="afinn"><a href="https://github.com/fnielsen/afinn">AFINN</a></h4>
+<h4 class="anchored" data-anchor-id="afinn">AFINN</h4>
 <p>Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(textdata)</span>
@@ -141,7 +141,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </section>
 <section id="bing" class="level4">
-<h4 class="anchored" data-anchor-id="bing"><a href="https://emilhvitfeldt.github.io/textdata/reference/lexicon_bing.html">Bing</a></h4>
+<h4 class="anchored" data-anchor-id="bing">Bing</h4>
 <p>Assigns “positive” or “negative”. The most simple of the sentiment lexicon libraries.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">get_sentiments</span>(<span class="st">"bing"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -164,7 +164,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </section>
 <section id="nrc" class="level4">
-<h4 class="anchored" data-anchor-id="nrc"><a href="http://saifmohammad.com/WebPages/lexicons.html">NRC</a></h4>
+<h4 class="anchored" data-anchor-id="nrc">NRC</h4>
 <p>Similar to bing in that it assigns one single word into a category but instead of just sentiments “negative” and “positive”, there is also an emotions related category that has “anger”, “anticipation”, “disgust”, “fear”, “joy”, “sadness”, “surprise”, and “trust”.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">get_sentiments</span>(<span class="st">"nrc"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -185,31 +185,239 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 # … with 13,862 more rows</code></pre>
 </div>
 </div>
-<p><span class="citation" data-cites="Manual">(<a href="#ref-Manual" role="doc-biblioref"><strong>Manual?</strong></a>)</span>{,</p>
-<p>article{nielsen11,<br>
-author = {Finn Äruprup Nielsen},<br>
-title = {A new ANEW: Evaluation of a word list for sentiment analysis in microblogs},<br>
-journal = {CoRR},<br>
-volume = {abs/1103.2903},<br>
-year = {2011},<br>
-url = {http://arxiv.org/abs/1103.2903},<br>
-archivePrefix = {arXiv},<br>
-eprint = {1103.2903},<br>
-biburl = {https://dblp.org/rec/bib/journals/corr/abs-1103-2903},<br>
-bibsource = {dblp computer science bibliography, https://dblp.org} ,</p>
-<p>}</p>
 </section>
 <section id="loughran" class="level4">
-<h4 class="anchored" data-anchor-id="loughran"><a href="https://emilhvitfeldt.github.io/textdata/reference/lexicon_loughran.html">Loughran</a></h4>
+<h4 class="anchored" data-anchor-id="loughran">Loughran</h4>
 <p>Used primarily for financial terms. It takes into account financial words that may appear to be a certain sentiment in other libraries but in a financial context, may have a different meaning.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">get_sentiments</span>(<span class="st">"loughran"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,150 × 2
+   word         sentiment
+   &lt;chr&gt;        &lt;chr&gt;    
+ 1 abandon      negative 
+ 2 abandoned    negative 
+ 3 abandoning   negative 
+ 4 abandonment  negative 
+ 5 abandonments negative 
+ 6 abandons     negative 
+ 7 abdicated    negative 
+ 8 abdicates    negative 
+ 9 abdicating   negative 
+10 abdication   negative 
+# … with 4,140 more rows</code></pre>
+</div>
+</div>
 </section>
 </section>
+<section id="objective" class="level3">
+<h3 class="anchored" data-anchor-id="objective">Objective</h3>
+<p>In this vignette, we will be exploring the IMDB-raw dataset file. This dataset comprises of two columns, “review” and “sentiment”. The “review” column is made up of reviews left on movies on the IMDB platform in the form of text data. The “sentiment” column is a binary score “positive” or “negative” that were labeled by hand. If a review is labeled as “negative” then it what is known as a “bad review” or a sub-par experience. If a review is labeled as “positive” then the reviewer had an enjoyable experience.</p>
+<p>For this experiment, we will be breaking apart the reviews into single words. From here, the words are associated with one score from each of the four libraries (AFINN, Bing, NRC, Loughran). Taking the most common sentiment, or, in the case of AFINN - the average value, we will obtain four overall average “sentiments” that summarize the reviews. One other predictor added is the length of the reviews as this may have had an impact in the hand-picked scores. In a sense, we are attempting to simulate the hand-picked sentiments.</p>
+<p>The four sentiments found will be used in a logistic model to predict how accurately they were at labeling the reviews. The predictions will be compared to the hand-picked values.</p>
 </section>
-<section id="single-decision-tree-model" class="level2">
-<h2 class="anchored" data-anchor-id="single-decision-tree-model">Single Decision Tree Model</h2>
+<section id="load-packages-and-data" class="level3">
+<h3 class="anchored" data-anchor-id="load-packages-and-data">Load Packages and Data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidytext)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tokenizers)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(textstem)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stopwords)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(textdata)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrplot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can then load in the dataset as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># loading in the dataset.</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
-<section id="findings" class="level2">
-<h2 class="anchored" data-anchor-id="findings">Findings</h2>
+<section id="cleaning-the-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="cleaning-the-dataset">Cleaning the Dataset</h3>
+<p>We then want to clean the dataset so that we can build a model with it. We first call two cleaning functions that we will use.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Functions for Text Cleaning </span><span class="al">###</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating several wrapper functions to clean up the data.</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># This first function removes the "&lt;br /&gt;" terms from the text, as these are not words.</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>clean_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(.text){</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(.text, <span class="st">"&lt;br /&gt;"</span>, <span class="st">" "</span>) <span class="sc">%&gt;%</span> <span class="fu">tolower</span>()</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># This function removes all punctuation. </span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>clean_fn2 <span class="ot">&lt;-</span> <span class="cf">function</span>(.text){</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_remove_all</span>(.text, <span class="st">'[[:punct:]]'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tolower</span>()</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Having defined these functions, we can then clean our dataset as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Applying this function to all of the reviews in our dataset.</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> dataset <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">review =</span> <span class="fu">clean_fn</span>(review)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">review =</span> <span class="fu">clean_fn2</span>(review))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, we can add an ‘id’ column to our dataset, and write the cleaned dataset to our ‘data’ folder for easy use later on.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding a column with id's for each observation.</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">rowid_to_column</span>(dataset_clean, <span class="st">".id"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#writing the data.</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(dataset_clean, <span class="at">file =</span> <span class="st">"/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-clean.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This ends the cleaning of our dataset, and we now have a dataset ready for use!</p>
+</section>
+<section id="creation-of-predictors" class="level3">
+<h3 class="anchored" data-anchor-id="creation-of-predictors">Creation of Predictors</h3>
+<p>In this section, we will add five predictors to the dataset, with one predictor being the length of the review, and the other four predictors being the sentiments of each review described above. We start by adding the length as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Adding a column with the lengths of each review for each observation.</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> dataset_clean <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">length =</span> <span class="fu">nchar</span>(dataset<span class="sc">$</span>review, <span class="at">type =</span> <span class="st">"chars"</span>, <span class="at">allowNA =</span> <span class="cn">FALSE</span>, <span class="at">keepNA =</span> <span class="cn">NA</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, we will compute the ‘afinn’ sentiment for each review and put it into the dataset as follows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># matches words in reviews with words in afinn library</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># provides an afinn score for each individual word</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>dataset_tokens <span class="ot">&lt;-</span> dataset_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, review) <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(<span class="fu">get_stopwords</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>))</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># calculates the mean of afinn score by id</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>afinn_scores <span class="ot">&lt;-</span> dataset_tokens <span class="sc">%&gt;%</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(.id) <span class="sc">%&gt;%</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">afinn_score =</span> <span class="fu">mean</span>(value))</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="co"># merge with main dataset</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> <span class="fu">merge</span>(dataset_clean, afinn_scores, <span class="at">by =</span> <span class="st">".id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we will compute the ‘bing’ sentiment for each review and put it into the dataset as follows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uses the Bing library to categorize words into positive and negative categories</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Our Bing score is based on whether there are more positive or negative words in each observation</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>bing_tokens <span class="ot">&lt;-</span> dataset_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, review) <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(<span class="fu">get_stopwords</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"bing"</span>))</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculating Bing Sentiment</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Joining by id and deciding sentiment based on the higher amount of positive or negative scores</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>bing_scores <span class="ot">&lt;-</span> bing_tokens <span class="sc">%&gt;%</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(.id) <span class="sc">%&gt;%</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">bing_score =</span> <span class="fu">max</span>(sentiment))</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge with main dataset</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> <span class="fu">merge</span>(dataset_clean, bing_scores, <span class="at">by =</span> <span class="st">".id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Continuing onward, we will compute the ‘Loughran’ sentiment for each review and put it into the dataset as follows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Predicting Sentiment with Loughran </span><span class="al">###</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>dataset_loughran_tokens <span class="ot">&lt;-</span> dataset_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, review) <span class="sc">%&gt;%</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(<span class="fu">get_stopwords</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"loughran"</span>))</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>loughran_scores <span class="ot">&lt;-</span> dataset_loughran_tokens <span class="sc">%&gt;%</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(.id) <span class="sc">%&gt;%</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">loughran_score =</span> <span class="fu">max</span>(sentiment))</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> <span class="fu">merge</span>(dataset_clean, loughran_scores, <span class="at">by =</span> <span class="st">".id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, we will compute the ‘NRC’ sentiment for each review and put it into the dataset as follows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Predicting sentiment with NRC </span><span class="al">###</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>dataset_nrc_tokens <span class="ot">&lt;-</span> dataset_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, review) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(<span class="fu">get_stopwords</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"nrc"</span>))</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>nrc_scores <span class="ot">&lt;-</span> dataset_nrc_tokens <span class="sc">%&gt;%</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(.id) <span class="sc">%&gt;%</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">nrc_score =</span> <span class="fu">max</span>(sentiment))</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>dataset_clean <span class="ot">&lt;-</span> <span class="fu">merge</span>(dataset_clean, nrc_scores, <span class="at">by =</span> <span class="st">".id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This concludes the construction of our cleaned dataset, as we now have all of the values that we want.</p>
+</section>
+<section id="building-and-testing-the-logistic-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="building-and-testing-the-logistic-regression-model">Building and Testing the Logistic Regression Model</h3>
+<p>Having constructed our dataset, we can now build the logistic regression model, and test it’s performance. First, let us set the seed, turn the ‘sentinment’ variable (the one we are trying to predict) into a factor (since it’s currently a character vector), and split the data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Building the Logistic Regression Model</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Setting the seed.</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">69</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co">#turning sentiment into a factor so that we can actually predict it.</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>dataset_clean<span class="sc">$</span>sentiment <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(dataset_clean<span class="sc">$</span>sentiment)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Reordering the factor so that 'Yes' is the first factor.</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>dataset_clean<span class="sc">$</span>sentiment <span class="ot">&lt;-</span> <span class="fu">relevel</span>(dataset_clean<span class="sc">$</span>sentiment, <span class="st">'positive'</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="co">#splitting the data.</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>dataset_split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(dataset_clean, <span class="at">prop =</span> <span class="fl">0.70</span>,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                               <span class="at">strata =</span> sentiment)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="co">#splitting the data into a training set and a testing set.</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>dataset_train <span class="ot">&lt;-</span> <span class="fu">training</span>(dataset_split)</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>dataset_test <span class="ot">&lt;-</span> <span class="fu">testing</span>(dataset_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, we can create the recipe using all of the predictors we added to our dataset above. Additionally, we will create the workflow and regression object at this time for our logistic regressoin model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating the recipe.</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>dataset_recipe <span class="ot">&lt;-</span> <span class="fu">recipe</span>(sentiment <span class="sc">~</span> length <span class="sc">+</span> afinn_score <span class="sc">+</span> bing_score</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                         <span class="sc">+</span> loughran_score <span class="sc">+</span> nrc_score, <span class="at">data =</span> dataset_train)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">#creating the logistic regression object.</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>log_reg <span class="ot">&lt;-</span> <span class="fu">logistic_reg</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co">#creating the workflow.</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>log_wkflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(log_reg) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(dataset_recipe)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, we can fit the model on the training data, then evaluate the performance (accuracy) of the model on the testing data as follows. We print out the accuracy at the end.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#fitting the workflow with the object.</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>log_fit <span class="ot">&lt;-</span> <span class="fu">fit</span>(log_wkflow, dataset_train)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co">#storing the accuracy of the logistic model on the testing data.</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>log_reg_acc <span class="ot">&lt;-</span> <span class="fu">augment</span>(log_fit, <span class="at">new_data =</span> dataset_test) <span class="sc">%&gt;%</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">accuracy</span>(<span class="at">truth =</span> sentiment, <span class="at">estimate =</span> .pred_class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
+<p>Let us check the results of our model from above.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>log_reg_acc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  .metric  .estimator .estimate
+  &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+1 accuracy binary             1</code></pre>
+</div>
+</div>
+<p>We note that with our predictors, we managed to attain a 100 percent accuracy with the model, which seems to indicate that there might be an issue with the model fit. Indeed, we note that when we ran the code, we were thrown a warning, which stated that the model fit was rank deficit. Changing the recipe in the code above reveals that we are thrown this error when ‘loughran_score’ is combined with at least one of the other score predictors. Excluding this predictor, we note that any combination of the other predictors always returns a 100 percent accuracy on the testing set, with the exception of the three following recipe combinations: ‘sentiment ~ length’, ‘sentiment ~ length + affin_score’, and ‘sentiment ~ affin_score’. (These recipe combinations yield accuracies of 50, 75, and 75 percent on the testing dataset).</p>
+<p>These results seem to indicate that the predictors from the sentinment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the expection of ‘afinn’, which by our discussion above does not perform as well.</p>
+</section>
+<section id="exploratory-data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#length &lt;- dataset$length</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#afinn_score &lt;- dataset$afinn_score</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">#corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 </section>
 </section>
 
