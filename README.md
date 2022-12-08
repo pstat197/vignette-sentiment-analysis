@@ -16,6 +16,7 @@ Repository Contents:
 root directory
 |-- data
     |-- IMDB_raw.csv
+    |-- IMDB-clean.csv
 |-- scripts
     |-- drafts
     |-- vignette-script.R
@@ -23,7 +24,7 @@ root directory
 |-- vignette.html
 |-- README.md
 |-- LICENSE
-|-- references.bib
+|-- vignette_files
 |-- vignette-sentiment-analysis.Rproj
 
 
