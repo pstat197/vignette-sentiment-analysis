@@ -10,8 +10,9 @@ library(wordcloud)
 library(reshape2)
 library(ggpubr)
 
-# loading in the dataset.
-dataset <- read.csv("/Users/raych/OneDrive/Desktop/PSTAT 197/vignette-sentiment-analysis/data/IMDB-raw.csv")
+# loading in the dataset
+# make sure to set working directory to folder containing vignette
+dataset <- read.csv("data/IMDB-raw.csv")
 
 
 ### Functions for Text Cleaning ###
@@ -39,7 +40,7 @@ dataset_clean <- dataset %>%
 # Adding a column with id's for each observation.
 dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
 
-write.csv(dataset_clean, file = "/Users/raych/OneDrive/Desktop/PSTAT 197/vignette-sentiment-analysis/data/IMDB-clean.csv")
+write.csv(dataset_clean, file = "data/IMDB-clean.csv")
 
 ### Predictors ###
 
