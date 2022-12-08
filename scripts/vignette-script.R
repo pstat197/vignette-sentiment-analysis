@@ -5,9 +5,14 @@ library(tokenizers)
 library(textstem)
 library(stopwords)
 library(textdata)
+library(corrplot)
+library(wordcloud)
+library(reshape2)
+library(ggpubr)
 
 # loading in the dataset.
 dataset <- read.csv("/Users/vardan/Documents/Github/vignette-sentiment-analysis/data/IMDB-raw.csv")
+
 
 ### Functions for Text Cleaning ###
 
@@ -148,7 +153,101 @@ log_reg_acc <- augment(log_fit, new_data = dataset_test) %>%
 
 
 
+### Exploratory Data Analysis
 
+library('corrplot')
+length <- dataset$length
+afinn_score <- dataset$afinn_score
+corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
+
+# Distribution of Sentiment Scores Among Reviews
+
+score_table = dataset %>% group_by('sentiment') %>% count(sentiment, sort=TRUE)
+
+bing_table = dataset_clean %>% group_by('bing_score') %>% count(sentiment, sort=TRUE)
+
+loughran_table = dataset_clean %>% group_by('loughran_score') %>% count(sentiment, sort=TRUE)
+
+# Bar Plot of Actual Distribution (maybe plot every type of lexicon to see how they differ)
+real_bar <- ggplot(data=score_table, aes(x=sentiment, y=n)) +
+  geom_bar(stat='identity', color="blue", fill="white", width=0.5) + ggtitle("Actual Data Split")
+
+# Looking at our bar plot, we can see that our dataset is split between 50% positively scored sentiment values and 50% negative scored sentiment values. At first, this split seemed too good to be true but after checking with the publisher of the original dataset we confirmed that the data is in fact split evenly. This graph also shows that our sentiment analysis tend to classify more reviews as positive than negative by a small amount.
+
+# Bing Distribution Bar Plot
+bing_bar <- ggplot(data=bing_table, aes(x=sentiment, y=n)) +
+  geom_bar(stat='identity', color="orange", fill="white", width=0.5) + ggtitle("Bing Data Split")
+
+# Loughran Distribution Bar Plot
+
+loughran_bar <- ggplot(data=loughran_table, aes(x=sentiment, y=n)) +
+  geom_bar(stat='identity', color="green", fill="white", width=0.5) + ggtitle("Loughran Data Split")
+
+# NEED TO ADD NRC & AFINN PLOTS
+
+# Facet All Plots Together
+figure <- ggarrange(real_bar, bing_bar, loughran_bar,
+                    ncol = 3, nrow = 1)
+figure
+
+# After comparing our several sentiment analysis plots to a plot of the real sentiment values, we can see that our sentiment analysis models are very accurate. You wouldn't be able to tell the differences in accuracy unless you looked at their accuracy tables which show a missclassification of around 100 reviews each.
+
+# Distribution of Number Words Per Review
+
+# In this graph, we explore how the length of movie reviews is distributed in our dataset.
+
+word_count_bar <- ggplot(data=dataset_clean, aes(x=length)) +
+  geom_bar(stat='count', color="purple", fill="white", width=2) + ggtitle("Distribution of Number Words Per Review") 
+
+word_count_bar
+
+# Most Common Words (Treeplot/)
+
+# Word Clouds
+
+# Bing Word Cloud
+bing_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+# NRC Word Cloud
+dataset_nrc_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+# Loughran Word Cloud
+dataset_loughran_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+# AFINN Word Cloud
+dataset_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+# Bing Negative & Positive Word Cloud
+bing_scores %>%
+  inner_join(bing_tokens) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#F8766D", "#00BFC4"),
+                   max.words = 100)
+
+# AFINN Negative & Positive Word Cloud
+afinn_scores %>%
+  inner_join(dataset_tokens) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#F8766D", "#00BFC4"),
+                   max.words = 100)
+
+# Loughran Negative & Positive Word Cloud
+loughran_scores %>%
+  inner_join(dataset_loughran_tokens) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#F8766D", "#00BFC4"),
+                   max.words = 100)
 
 
 
