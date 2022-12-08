@@ -240,6 +240,197 @@ dataset_clean <- merge(dataset_clean, nrc_scores, by = ".id")
 
 This concludes the construction of our cleaned dataset, as we now have all of the predictors that we want.
 
+### Exploratory Data Analysis
+
+In this section, we will explore our IMDB Review dataset with a plethora of graphs and other visualizations.
+
+##### Corrplot 
+
+```{r}
+library('corrplot')
+length <- dataset_clean$length
+afinn_score <- dataset_clean$afinn_score
+corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
+```
+
+In this corrplot, we how the length of each review effects the AFINN score of the review. Although our variables have a slight negative correlation, our corrplot shows us that review length does not affect AFINN score as they are not strongly correlated. 
+
+##### Distribution of Sentiment Scores Among Reviews
+
+We will use barplots to show how the distribution of positive and negative scores between different sentiment analysis models varies. We will plot the distributions of our Bing and Loughran scores against the actual split of the data to see how well we were able to classify our movie reviews.
+
+To do so, we must first count the amount of positive and negative scores for each sentiment analysis model. We can do this by grouping each dataframe by their sentiment score column and then counting each group.
+
+```{r}
+score_table = dataset_clean %>% group_by('sentiment') %>% count(sentiment, sort=TRUE)
+
+bing_table = dataset_clean %>% group_by('bing_score') %>% count(sentiment, sort=TRUE)
+
+loughran_table = dataset_clean %>% group_by('loughran_score') %>% count(sentiment, sort=TRUE)
+```
+
+##### Bar Plot of Actual Distribution 
+
+We then use a faceted bar plot to compare the distributions in our models versus the real distribution.
+
+```{r}
+real_bar <- ggplot(data=score_table, aes(x=sentiment, y=n)) +
+  geom_bar(stat='identity', color="blue", fill="white", width=0.5) + ggtitle("Actual Data Split")
+```
+
+##### Bing Distribution Bar Plot
+
+```{r}
+bing_bar <- ggplot(data=bing_table, aes(x=sentiment, y=n)) +
+  geom_bar(stat='identity', color="orange", fill="white", width=0.5) + ggtitle("Bing Data Split")
+```
+
+
+##### Loughran Distribution Bar Plot
+
+```{r}
+loughran_bar <- ggplot(data=loughran_table, aes(x=sentiment, y=n)) +
+  geom_bar(stat='identity', color="green", fill="white", width=0.5) + ggtitle("Loughran Data Split")
+```
+
+##### Facet All Plots Together
+
+```{r}
+figure <- ggarrange(real_bar, bing_bar, loughran_bar,
+                    ncol = 3, nrow = 1)
+figure
+```
+
+Looking at our bar plots, we can see that the real split between our sentiment score values is surprisingly 50.07% positive and 49.99% negative. At first, this split seemed too good to be true but after checking with the publisher of the original dataset we confirmed that the data is in fact split about evenly. This graph also shows us that our NRC and Bing sentiment analysis models were able to classify reviews with perfect accuracy. You wouldn't be able to tell the differences in accuracy unless you looked at their real values in their accuracy tables which show a perfect classification rate.
+
+
+##### Distribution of Number of Words Per Review
+
+In this graph, we explore how the length of movie reviews is distributed in our dataset. We counted every movie review's length by adjusting our stat variable to count.
+
+```{r}
+word_count_bar <- ggplot(data=dataset_clean, aes(x=length)) +
+  geom_bar(stat='count', color="purple", fill="white", width=2) + ggtitle("Distribution of Number of Words Per Review") 
+
+word_count_bar
+```
+
+Our graph shows us that the majority of our movie reviews have an average word length under 1500.
+
+##### Most Common Words In a Sentiment Analysis Model
+
+We look at our NRC sentiment analysis dataframe to find the most common words in our movie reviews that are also found in our NRC library.
+
+To do so, we must first count every time a word appeared in a movie review for each sentiment analysis model. 
+
+```{r}
+word_counts <- dataset_nrc_tokens %>% count(word)
+word_counts <- word_counts[order(-word_counts$n),]
+```
+
+Now we will subset our dataset to only use the top 20 most popular words.
+
+```{r}
+first_20 <- word_counts[1:20,]
+
+first_20_bar <- ggplot(data=first_20, aes(x=reorder(word,-n), y=n)) +
+  geom_bar(stat='identity', color="purple", fill="white", width=0.5) + ggtitle("Most Popular Words in Movie Reviews (NRC Sentiment Analysis)") 
+
+first_20_bar
+```
+
+Our plot shows us that Good and Bad are by far the most common words found in our movie reviews that were recognized by the NRC library. Good and Bad are also likely to be best indicators of whether a review is positive or negative.
+
+##### Tree Map of Most Popular Movie Review Words
+
+We can also use the 'treemap' package to visualize word popularity by size.
+
+```{r}
+treemap(first_20, # dataframe
+        index=("word"),  # categorical column
+        vSize = "n",  # numerical column
+        type="index", # Type sets the organization and color scheme of your treemap
+        palette = "Greens",  # color palette from RColorBrewer preset. You can also make a vector of your own color values.
+        title="Most Popular Movie Review Words", # title
+        fontsize.title = 14 # font size
+)
+```
+
+##### Word Clouds
+
+Using each sentiment analysis model dataframe, we can count every instance of a word and create wordcloud of the most popular words recognized from every model's corresponding library.
+
+##### Bing Word Cloud
+
+```{r}
+bing_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+##### NRC Word Cloud
+
+```{r}
+dataset_nrc_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+
+##### Loughran Word Cloud
+
+```{r}
+dataset_loughran_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+```
+
+##### AFINN Word Cloud
+
+```{r}
+dataset_tokens %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+We can also classify word clouds into positive and negative sentiments by sorting every word by their sentiment value and using acast() which casts our dataframe into an array of count values "n". We then call comparison.cloud() to make a word cloud after comparing sentiment score frequencies. After, we can apply our favorite hexadecimal color values to represent positive and negative words.
+
+##### Bing Negative & Positive Word Cloud
+
+```{r}
+bing_scores %>%
+  inner_join(bing_tokens) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#FF6F61", "#34568B"),
+                   max.words = 100)
+```
+
+##### AFINN Negative & Positive Word Cloud
+
+```{r}
+afinn_scores %>%
+  inner_join(dataset_tokens) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#9B2335", "#55B4B0"),
+                   max.words = 100)
+```
+
+
+##### Loughran Negative & Positive Word Cloud
+
+```{r}
+loughran_scores %>%
+  inner_join(dataset_loughran_tokens) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("#E15D44", "#7FCDCD"),
+                   max.words = 100)
+```
+
+
 ### Building and Testing the Logistic Regression Model
 
 Having constructed our dataset, we can now build the logistic regression model, and test it's performance. First, let us set the seed, turn the 'sentinment' variable (the one we are trying to predict) into a factor (since it's currently a character vector), and split the data.
@@ -308,18 +499,6 @@ We note that with our predictors, we managed to attain a 100 percent accuracy wi
 These results seem to indicate that the predictors from the sentiment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the exception of 'afinn', which by our discussion above does not perform as well.
 
 
-
-
-### Exploratory Data Analysis
-
-```{r}
-#length <- dataset$length
-#afinn_score <- dataset$afinn_score
-#corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
-
-```
 problems:
 Can't distinguish some words with different formats, like "lacks", lack is included in the lexicon but lacks is not
 Scary when horror movie is bad
-
-
