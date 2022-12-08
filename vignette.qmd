@@ -271,9 +271,9 @@ Let us check the results of our model from above.
 log_reg_acc
 ```
 
-We note that with our predictors, we managed to attain a 100 percent accuracy with the model, which seems to indicate that there might be an issue with the model fit. Indeed, we note that when we ran the code, we were thrown a warning, which stated that the model fit was rank deficit. Changing the recipe in the code above reveals that we are thrown this error when 'loughran_score' is combined with at least one of the other score predictors. Excluding this predictor, we note that any combination of the other predictors always returns a 100 percent accuracy on the testing set, with the exception of the three following recipe combinations: 'sentiment ~ length', 'sentiment ~ length + affin_score', and 'sentiment ~ affin_score'. (These recipe combinations yield accuracies of 50, 75, and 75 percent on the testing dataset). 
+We note that with our predictors, we managed to attain a 100 percent accuracy with the model, which seems to indicate that there might be an issue with the model fit. Indeed, we note that when we ran the code, we were thrown a warning, which stated that the model fit was rank deficit. Changing the recipe in the code above reveals that we are thrown this error when 'loughran_score' is combined with at least one of the other score predictors. Excluding this predictor, we note that any combination of the other predictors always returns a 100 percent accuracy on the testing set, with the exception of the three following recipe combinations: 'sentiment ~ length', 'sentiment ~ length + affin_score', and 'sentiment ~ afinn_score'. (These recipe combinations yield accuracies of 50, 75, and 75 percent respectively on the testing dataset). 
 
-These results seem to indicate that the predictors from the sentinment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the expection of 'afinn', which by our discussion above does not perform as well.
+These results seem to indicate that the predictors from the sentiment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the exception of 'afinn', which by our discussion above does not perform as well.
 
 
 
