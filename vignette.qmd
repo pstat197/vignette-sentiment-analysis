@@ -2,23 +2,21 @@
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
-
-
 # Sentiment Analysis
 
 #### By Vardan Martirosyan, Raymond Lee, Piero Trujillo, Shannon Rumsey, Yutong Wang
 
 ## Introduction
 
-### Sentiment Analysis and Lexicons 
+### Sentiment Analysis and Lexicons
 
-Sentiment analysis (also called opinion mining) is the process of analyzing text to understand its sentiment. This can be useful in evaluating the sentiment of product reviews, social media posts, and more without having to read them ourselves. One of the most common ways to accomplish this is to consider a text as the sum of the sentiments of its individual words. This is similar to how humans use their understanding of the emotional intent of words to infer whether a text is positive or negative. 
+Sentiment analysis (also called opinion mining) is the process of analyzing text to understand its attitude. This can be helpful when combing through large amounts of text data as oppose to doing to by hand. One of the most common ways to create a sentiment label for long pieces of text is to consider it as the sum of individual words, each with its own sentiment label. This is similar to how humans use their understanding of emotional intent to infer whether a text is positive or negative; each word is read for its value, and at the end, they are combined together to create something of a larger meaning.
 
-There exist various lexicons (or dictionaries) that are used to evaluate the emotion of a text and label them as positive, negative, or even neutral. They usually analyze text as unigrams. These lexicons contain many English words and their associated scores or labels for positive/negative sentiment or for emotions such as happiness, anger, etc. We will utilize four lexicons: AFINN, Bing, NRC, and Loughran. 
+There are many different lexicon libraries that are used to evaluate text meaning and label them, typically in the form of single-words with an associated rating. Please note that lexicon libraries are not limited to English and can be used for many different languages. For the purposes of this vignette, we will be working with only English words and utilize four lexicons: AFINN, Bing, NRC, and Loughran.
 
 #### AFINN
 
-Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
+Of the four sentiment libraries we will be using, AFINN is the only numeric one. This library assigns each word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation while those in the positive range are words with a positive connotation. The numeric values also have act as degrees, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
 
 ```{r}
 library(textdata)
@@ -28,7 +26,7 @@ get_sentiments("afinn")
 
 #### Bing
 
-Assigns "positive" or "negative". The most simple of the sentiment lexicon libraries.
+Bing is one of the more common lexicon libraries to use. It assigns "positive" or "negative", the most simple of the sentiment lexicon libraries.
 
 ```{r}
 bing <- get_sentiments("bing")
@@ -37,7 +35,7 @@ bing
 
 #### NRC
 
-Similar to Bing in that it assigns one single word into a category but instead of just sentiments "negative" and "positive", there is also an emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
+This one is similar to Bing in that it assigns one single word into a category, but instead of just sentiments "negative" and "positive", there are also emotions related category that has "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", and "trust".
 
 ```{r}
 nrc <- get_sentiments("nrc")
@@ -46,7 +44,7 @@ nrc
 
 #### Loughran
 
-Used primarily for financial terms. It takes into account financial words that may appear to be a certain sentiment in other libraries but in a financial context, may have a different meaning.
+Loughran is used primarily for financial terms. It takes into account financial words that may appear to be a certain sentiment in other libraries but may have a different meaning in a financial context.
 
 ```{r}
 loughran<-get_sentiments("loughran")
@@ -55,9 +53,9 @@ loughran
 
 ### Objective
 
-In this vignette, we will be exploring the IMDB-raw dataset file. This dataset comprises of two columns, "review" and "sentiment". The "review" column is made up of reviews left on movies on the IMDB platform in the form of text data. The "sentiment" column is a binary score "positive" or "negative" that were labeled by hand. If a review is labeled as "negative" then it what is known as a "bad review" or a sub-par experience. If a review is labeled as "positive" then the reviewer had an enjoyable experience.
+In this vignette, we will be exploring the IMDB-raw dataset file. This dataset comprises of two columns, "review" and "sentiment". The "review" column is made up of reviews left on the IMDB platform in the form of text data. The "sentiment" column is a binary score, "positive" or "negative", that was labeled by hand.
 
-For this experiment, we will be breaking apart the reviews into single words. From here, the words are associated with one score from each of the four libraries (AFINN, Bing, NRC, Loughran). Taking the most common sentiment, or, in the case of AFINN - the average value, we will obtain four overall average "sentiments" that summarize the reviews. One other predictor added is the length of the reviews as this may have had an impact in the hand-picked scores. In a sense, we are attempting to simulate the hand-picked sentiments.
+For this vignette, we will be breaking apart the reviews into single words. From here, the words are associated with one score from each of the four libraries (AFINN, Bing, NRC, Loughran). Taking the most common sentiment, or, in the case of AFINN - the average value, we will obtain four overall average "sentiments" that summarize the reviews. One other predictor added is the length of the reviews as this may have had an impact in the hand-picked scores. In a sense, we are attempting to simulate the hand-picked sentiments.
 
 The four sentiments found will be used in a logistic model to predict how accurately they were at labeling the reviews. The predictions will be compared to the hand-picked values.
 
@@ -83,10 +81,10 @@ We can then load in the dataset as follows:
 dataset <- read.csv("data/IMDB-raw.csv")
 ```
 
-
 ### Cleaning the Dataset
 
-We then want to clean the dataset so that we can build a model with it. We first call two cleaning functions that we will use.
+We want to clean the dataset so that we can build a model with it. To do this, we will define and use two functions.
+
 ```{r}
 ### Functions for Text Cleaning ###
 
@@ -104,7 +102,7 @@ clean_fn2 <- function(.text){
 }
 ```
 
-Having defined these functions, we can then clean our dataset as follows:
+Having defined these functions, we can now clean the dataset:
 
 ```{r}
 # Applying this function to all of the reviews in our dataset.
@@ -113,7 +111,7 @@ dataset_clean <- dataset %>%
   mutate(review = clean_fn2(review))
 ```
 
-Finally, we can add an 'id' column to our dataset, and write the cleaned dataset to our 'data' folder for easy use later on.
+Finally, we can add an 'id' column to our dataset and write the cleaned dataset to our 'data' folder for easy use later on.
 
 ```{r}
 # Adding a column with id's for each observation.
@@ -123,12 +121,11 @@ dataset_clean <- tibble::rowid_to_column(dataset_clean, ".id")
 write.csv(dataset_clean, file = "data/IMDB-clean.csv")
 ```
 
-This ends the cleaning of our dataset, and we now have a dataset ready for use!
-
-
 ### Creation of Predictors
 
-In this section, we will add five predictors to the dataset, with one predictor being the length of the review, and the other four predictors being the sentiments of each review that will be obtained from the lexicons we've mentioned above. We start by adding the length as follows:
+In this section, we will add five predictors to the dataset, one predictor being the length of the review and the other four predictors being the sentiments of each review.
+
+First, create the length predictor.
 
 ```{r}
 #Adding a column with the lengths of each review for each observation.
@@ -137,7 +134,7 @@ dataset_clean <- dataset_clean %>%
 
 ```
 
-Then, we will compute the 'afinn' sentiment for each review and put it into the dataset as follows.
+Then, compute the 'AFINN' sentiment for each review and merge it to the dataset as follows.
 
 ```{r}
 # matches words in reviews with words in afinn library
@@ -162,7 +159,7 @@ afinn_scores$afinn_score[is.na(afinn_scores$afinn_score)] <- 0
 dataset_clean <- merge(dataset_clean, afinn_scores, by = ".id")
 ```
 
-Next, we will compute the 'bing' sentiment for each review and put it into the dataset as follows.
+Next, we will add the 'bing' sentiment.
 
 ```{r}
 # Uses the Bing library to categorize words into positive and negative categories
@@ -213,7 +210,7 @@ dataset_clean <- merge(dataset_clean, loughran_scores, by = ".id")
 
 ```
 
-Finally, we will compute the 'NRC' sentiment for each review and put it into the dataset as follows.
+Finally, we will add the 'NRC' sentiment.
 
 ```{r}
 ### Predicting sentiment with NRC
@@ -243,7 +240,7 @@ This concludes the construction of our cleaned dataset, as we now have all of th
 
 In this section, we will explore our IMDB Review dataset with a plethora of graphs and other visualizations.
 
-##### Corrplot 
+##### Corrplot
 
 ```{r}
 library('corrplot')
@@ -252,7 +249,7 @@ afinn_score <- dataset_clean$afinn_score
 corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
 ```
 
-In this correlation plot, we show how the length of each review affects its AFINN score. Although our variables have a slight negative correlation with each other, review length does not seem to strongly affect AFINN score.
+In this correlation plot, we see how the length of each review affects its AFINN score. Although our variables have a slight negative correlation with each other, review length does not seem to strongly affect AFINN score.
 
 ##### Distribution of Sentiment Scores Among Reviews
 
@@ -268,9 +265,9 @@ bing_table = dataset_clean %>% group_by('bing_score') %>% count(sentiment, sort=
 loughran_table = dataset_clean %>% group_by('loughran_score') %>% count(sentiment, sort=TRUE)
 ```
 
-##### Bar Plot of Actual Distribution 
+##### Bar Plot of Actual Distribution
 
-We then use a faceted bar plot to compare the distributions in our models versus the real distribution.
+We can now use a faceted bar plot to compare the distributions in our models versus the real distribution.
 
 ```{r}
 real_bar <- ggplot(data=score_table, aes(x=sentiment, y=n)) +
@@ -283,7 +280,6 @@ real_bar <- ggplot(data=score_table, aes(x=sentiment, y=n)) +
 bing_bar <- ggplot(data=bing_table, aes(x=sentiment, y=n)) +
   geom_bar(stat='identity', color="orange", fill="white", width=0.5) + ggtitle("Bing Data Split")
 ```
-
 
 ##### Loughran Distribution Bar Plot
 
@@ -303,10 +299,9 @@ figure
 
 Looking at our bar plots, we can see that the real split between our sentiment score values is surprisingly 50.07% positive and 49.99% negative. At first, this split seemed too good to be true but after checking with the publisher of the original dataset we confirmed that the data is in fact split about evenly. This graph also shows us that our NRC and Bing sentiment analysis models were able to classify reviews with perfect accuracy. You wouldn't be able to tell the differences in accuracy unless you looked at their real values in their accuracy tables which show a perfect classification rate.
 
-
 ##### Distribution of Number of Words Per Review
 
-In this graph, we explore how the length of movie reviews is distributed in our dataset. We counted every movie review's length by adjusting our stat variable to count.
+In this graph, we explore how the length of movie reviews is distributed in our dataset. We counted every movie review's length by adjusting our "stat" variable to count.
 
 ```{r}
 word_count_bar <- ggplot(data=dataset_clean, aes(x=length)) +
@@ -321,7 +316,7 @@ Our graph shows us that the majority of our movie reviews have an average word l
 
 We look at our NRC sentiment analysis dataframe to find the most common words in our movie reviews that are also found in our NRC library.
 
-To do so, we must first count every time a word appeared in a movie review for each sentiment analysis model. 
+To do so, we must first count every time a word appeared in a movie review for each sentiment analysis model.
 
 ```{r}
 word_counts <- nrc_tokens %>% count(word)
@@ -339,7 +334,7 @@ first_20_bar <- ggplot(data=first_20, aes(x=reorder(word,-n), y=n)) +
 first_20_bar
 ```
 
-Our plot shows us that Good and Bad are by far the most common words found in our movie reviews that were recognized by the NRC library. Good and Bad are also likely to be best indicators of whether a review is positive or negative.
+Our plot shows us that "good" and "bad" are by far the most common words found in our movie reviews that were recognized by the NRC library. These two words are also likely to be best indicators of whether a review is positive or negative.
 
 ##### Tree Map of Most Popular Movie Review Words
 
@@ -360,7 +355,7 @@ treemap(first_20, # dataframe
 
 ##### Word Clouds
 
-Using each sentiment analysis model dataframe, we can count every instance of a word and create word clouds of the most popular words recognized from every model's corresponding library.
+Using each sentiment analysis dataframe, we can count every instance of a word and create word clouds of the most popular words recognized from every model's corresponding library.
 
 ##### Bing Word Cloud
 
@@ -379,7 +374,6 @@ nrc_tokens %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
 ```
-
 
 ##### Loughran Word Cloud
 
@@ -424,7 +418,6 @@ afinn_scores %>%
                    max.words = 100)
 ```
 
-
 ##### Loughran Negative & Positive Word Cloud
 
 ```{r}
@@ -436,10 +429,9 @@ loughran_scores %>%
                    max.words = 100)
 ```
 
-
 ### Building and Testing the Logistic Regression Model
 
-Having constructed our dataset, we can now build the logistic regression model, and test it's performance. First, let us set the seed, turn the 'sentinment' variable (the one we are trying to predict) into a factor (since it's currently a character vector), and split the data.
+Having constructed our dataset, we can now build the logistic regression model, and test it's performance. First, let us set the seed, turn the 'sentiment' variable (the one we are trying to predict) into a factor (since it's currently a character vector), and split the data.
 
 ```{r}
 #Building the Logistic Regression Model
@@ -463,7 +455,7 @@ dataset_train <- training(dataset_split)
 dataset_test <- testing(dataset_split)
 ```
 
-Then, we can create the recipe using all of the predictors we added to our dataset above. Additionally, we will create the workflow and regression object at this time for our logistic regressoin model.
+We can create the recipe using all of the predictors we added to our dataset above. Additionally, we will create the workflow and regression object at this time for our logistic regressoin model.
 
 ```{r}
 #creating the recipe.
@@ -495,20 +487,20 @@ log_reg_acc <- augment(log_fit, new_data = dataset_test) %>%
 
 ### Conclusion
 
-Let us check the results of our model from above.
+Let's check the results of our model from above.
+
 ```{r}
 log_reg_acc
 ```
 
-We note that with our predictors, we managed to attain a 100 percent accuracy with the model, which seems to indicate that there might be an issue with the model fit. Indeed, we note that when we ran the code, we were thrown a warning, which stated that the model fit was rank deficit. Changing the recipe in the code above reveals that we are thrown this error when 'loughran_score' is combined with at least one of the other score predictors. Excluding this predictor, we note that any combination of the other predictors always returns a 100 percent accuracy on the testing set, with the exception of the three following recipe combinations: 'sentiment ~ length', 'sentiment ~ length + affin_score', and 'sentiment ~ afinn_score'. (These recipe combinations yield accuracies of 50, 75, and 75 percent respectively on the testing dataset). 
+We managed to obtain 100 percent accuracy with the model, which seems to indicate that there might be an issue with the model fit. When we ran the code, we were thrown a warning, which stated that the model fit was rank deficit. Changing the recipe in the code above reveals that we are thrown this error when 'loughran_score' is combined with at least one of the other score predictors. Excluding this predictor, we see that any combination of the other predictors always returns a 100 percent accuracy on the testing set, with the exception of the three following recipe combinations: 'sentiment \~ length', 'sentiment \~ length + affin_score', and 'sentiment \~ afinn_score'. (These recipe combinations yield accuracies of 50, 75, and 75 percent respectively on the testing dataset).
 
-These results seem to indicate that the predictors from the sentiment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the exception of 'afinn', which by our discussion above does not perform as well.
+These results seem to indicate that the predictors from the sentiment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the exception of 'AFINN', which, by our discussion above, does not perform as well.
 
-In terms of problems with our sentiment analysis and what we could potentially fix them, there are several things that are worth mentioning. First, even though lexicons attempt to cover all formats of certain words, such as how the afinn lexicon included "abandon", "abandoned", and "abandons" at the same time, they fail to distinguish the different formats of some words that are not always used as verbs. For instance, in the afinn lexicon, "lack" is included but "lacks" is not. Similarly, slang, abbreviations, and misspellings will also not be evaluated correctly, which can lead to less accurate sentiment assignments for some reviews.
+In terms of problems with our sentiment analysis and what we could potentially fix, there are several things that are worth mentioning. First, even though lexicons attempt to cover all formats of certain words, such as how the AFINN lexicon included "abandon", "abandoned", and "abandons" at the same time, they fail to distinguish the different formats of some words that are not always used as verbs. For instance, in the AFINN lexicon, "lack" is included but "lacks" is not. Similarly, slang, abbreviations, and misspellings will also not be evaluated correctly, which can lead to less accurate sentiment assignments for some reviews.
 
-To fix this, we can attempt the approach of approximate string comparisons, so that we can rate "lacks" the same way we rate "lack" and "terible" the same way we rate "terrible". 
+To fix this, we can attempt the approach of approximate string comparisons, so that we can rate "lacks" the same way we rate "lack", and "terible" the same way we rate "terrible".
 
-Another problem that we cannot ignore when using lexicon is the context of the reviews. For example, the word "scary" is rated negative in all the lexicons that contains it, and while it is usually a negative word, when the review is about a horror movie, it can actually be a good thing. 
+Another problem that we cannot ignore when using lexicon is the context of the reviews. For example, the word "scary" is rated negative in all the lexicons that contains it, and while it is usually a negative word, when the review is regarding a horror movie, it can actually be positive.
 
-What we can do to solve this problem is to include a new variable that includes certain words like names of genres in the lexicons, which we will call "multiplier". For instance, we can make "horror" a multiplier with a value of -1, and when "horror" is present, things like "scary" or "scream" are multiplied by this value, which will turn them into positive sentiments. 
-
+For future applications, we could solve this problem by including a new variable that accounts for words such as names of genres, which we will denote "multiplier". For instance, we can make "horror" a multiplier with a value of -1, and when "horror" is present, things like "scary" or "scream" are multiplied by this value, which will turn them into positive sentiments.
