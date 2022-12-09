@@ -21,7 +21,6 @@ There exist various lexicons (or dictionaries) that are used to evaluate the emo
 Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
 
 ```{r}
-# .libPaths("C:/Users/tommy/AppData/Local/R/win-library/4.2")
 library(textdata)
 library(tidytext)
 get_sentiments("afinn")
@@ -498,7 +497,11 @@ We note that with our predictors, we managed to attain a 100 percent accuracy wi
 
 These results seem to indicate that the predictors from the sentiment engines we obtained are very good predictors for predicting the sentiments of movie reviews. It seems that all of them perform equivalently well, with the exception of 'afinn', which by our discussion above does not perform as well.
 
+In terms of problems with our sentiment analysis and what we could potentially fix them, there are several things that are worth mentioning. First, even though lexicons attempt to cover all formats of certain words, such as how the afinn lexicon included "abandon", "abandoned", and "abandons" at the same time, they fail to distinguish the different formats of some words that are not always used as verbs. For instance, in the afinn lexicon, "lack" is included but "lacks" is not. Similarly, slang, abbreviations, and misspellings will also not be evaluated correctly, which can lead to less accurate sentiment assignments for some reviews.
 
-problems:
-Can't distinguish some words with different formats, like "lacks", lack is included in the lexicon but lacks is not
-Scary when horror movie is bad
+To fix this, we can attempt the approach of approximate string comparisons, so that we can rate "lacks" the same way we rate "lack" and "terible" the same way we rate "terrible". 
+
+Another problem that we cannot ignore when using lexicon is the context of the reviews. For example, the word "scary" is rated negative in all the lexicons that contains it, and while it is usually a negative word, when the review is about a horror movie, it can actually be a good thing. 
+
+What we can do to solve this problem is to include a new variable that includes certain words like names of genres in the lexicons, which we will call "multiplier". For instance, we can make "horror" a multiplier with a value of -1, and when "horror" is present, things like "scary" or "scream" are multiplied by this value, which will turn them into positive sentiments. 
+
