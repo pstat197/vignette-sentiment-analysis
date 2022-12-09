@@ -296,6 +296,7 @@ loughran_bar <- ggplot(data=loughran_table, aes(x=sentiment, y=n)) +
 ##### Facet All Plots Together
 
 ```{r}
+library(ggpubr)
 figure <- ggarrange(real_bar, bing_bar, loughran_bar,
                     ncol = 3, nrow = 1)
 figure
@@ -324,7 +325,7 @@ We look at our NRC sentiment analysis dataframe to find the most common words in
 To do so, we must first count every time a word appeared in a movie review for each sentiment analysis model. 
 
 ```{r}
-word_counts <- dataset_nrc_tokens %>% count(word)
+word_counts <- nrc_tokens %>% count(word)
 word_counts <- word_counts[order(-word_counts$n),]
 ```
 
@@ -346,6 +347,8 @@ Our plot shows us that Good and Bad are by far the most common words found in ou
 We can also use the 'treemap' package to visualize word popularity by size.
 
 ```{r}
+library(treemap)
+
 treemap(first_20, # dataframe
         index=("word"),  # categorical column
         vSize = "n",  # numerical column
@@ -363,6 +366,8 @@ Using each sentiment analysis model dataframe, we can count every instance of a 
 ##### Bing Word Cloud
 
 ```{r}
+library(wordcloud)
+
 bing_tokens %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
@@ -371,7 +376,7 @@ bing_tokens %>%
 ##### NRC Word Cloud
 
 ```{r}
-dataset_nrc_tokens %>%
+nrc_tokens %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
 ```
@@ -380,7 +385,7 @@ dataset_nrc_tokens %>%
 ##### Loughran Word Cloud
 
 ```{r}
-dataset_loughran_tokens %>%
+loughran_tokens %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
 
@@ -389,7 +394,7 @@ dataset_loughran_tokens %>%
 ##### AFINN Word Cloud
 
 ```{r}
-dataset_tokens %>%
+afinn_tokens %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
 ```
@@ -399,6 +404,8 @@ We can also classify word clouds into positive and negative sentiments by sortin
 ##### Bing Negative & Positive Word Cloud
 
 ```{r}
+library(reshape2)
+
 bing_scores %>%
   inner_join(bing_tokens) %>%
   count(word, sentiment, sort = TRUE) %>%
@@ -411,7 +418,7 @@ bing_scores %>%
 
 ```{r}
 afinn_scores %>%
-  inner_join(dataset_tokens) %>%
+  inner_join(afinn_tokens) %>%
   count(word, sentiment, sort = TRUE) %>%
   acast(word ~ sentiment, value.var = "n", fill = 0) %>%
   comparison.cloud(colors = c("#9B2335", "#55B4B0"),
@@ -423,7 +430,7 @@ afinn_scores %>%
 
 ```{r}
 loughran_scores %>%
-  inner_join(dataset_loughran_tokens) %>%
+  inner_join(loughran_tokens) %>%
   count(word, sentiment, sort = TRUE) %>%
   acast(word ~ sentiment, value.var = "n", fill = 0) %>%
   comparison.cloud(colors = c("#E15D44", "#7FCDCD"),
