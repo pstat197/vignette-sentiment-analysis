@@ -1,0 +1,251 @@
+---
+title: "Lab 8"
+author: "Vardan Martirosyan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(forecast)
+library(fda)
+
+url <- 'https://raw.githubusercontent.com/pstat197/pstat197a/main/materials/labs/lab8-forecasting/data/soiltemp-200cm.csv'
+
+soil <- read_csv(url) %>%
+  dplyr::select(-year, -elev) %>%
+  filter(!str_starts(site, 'SHA'))
+```
+
+```{r}
+# choose a site at random
+#set.seed(111522) # comment out!
+
+#setting our own seed
+set.seed(69)
+
+#running the rest of the code given to us.
+nsites <- soil %>% pull(site) %>% unique() %>% length()
+site_ix <- sample(1:nsites, size = 1)
+
+# filter rows
+site_data <- soil %>% 
+  filter(site == unique(soil$site)[site_ix])
+
+# preview
+site_data %>% head()
+```
+
+Running the code given to us.
+```{r}
+# predictor matrix
+xreg <- site_data %>%
+  pull(day) %>%
+  fda::fourier(nbasis = 4, period = 365)
+
+# response
+y <- pull(site_data, temp)
+
+# create a data frame
+reg_df <- bind_cols(temp = y, 
+                    xreg)
+
+# fit the model
+fit <- lm(temp ~ . - 1, data = reg_df)
+
+# obtain fitted values, residuals, etc.
+fit_df <- broom::augment(fit) %>%
+  bind_cols(date = site_data$date)
+```
+
+\section*{Action}
+Plotting my residual series.
+```{r}
+# plot residual series
+fit_df %>%
+  ggplot(aes(x = date, y = .resid)) +
+  geom_path()
+```
+
+My residual series looks close enough to stationary. I look at how much the graph is dipping up and down over time to determine the variance, and I look to what value the graph seems to take on the most horizontally for the constant mean over time condition.
+
+
+We continue to copy down code.
+```{r}
+# plot residuals at various lags
+fit_df %>%
+  dplyr::select(.resid) %>%
+  mutate(lag1 = lag(.resid, n = 1),
+         lag2 = lag(.resid, n = 2),
+         lag3 = lag(.resid, n = 3),
+         lag4 = lag(.resid, n = 4),
+         lag5 = lag(.resid, n = 5),
+         lag6 = lag(.resid, n = 6)) %>%
+  pivot_longer(-.resid) %>%
+  ggplot(aes(x = .resid, y = value)) +
+  geom_point() + 
+  facet_wrap(~ name)
+```
+
+Capturing this pattern succinctly by computing the correlation coefficient at each lag.
+```{r}
+resid_acf <- acf(fit_df$.resid, plot = F)
+
+plot(resid_acf, main = '')
+```
+
+\section*{Action}
+1) The heights of the vertical lines in the ACF plot show how correlated each residual is with themselves as the lag increases.
+
+2) The ACF plot captures the information that the residuals are less correlated with themselves over time.
+
+
+Using partial autocorrelation, which is correlation at a given lag after adjusting for previous lags.
+```{r}
+resid_pacf <- pacf(fit_df$.resid, plot = F)
+
+plot(resid_pacf, main = '')
+```
+
+\section*{Action}
+1) We are asked to compute and plot the PACF for our residiaul series. We did this above.
+
+2) We are asked to determine the order of the autoregression: how many partial autocorrelations are outside this confidence band? There are 7 partial autocorrelations outside the confidence bands.
+
+3) I compared with my neighbor, and while we had similar results, they were still different since we had different sites.
+
+
+
+\section*{Fitting an AR model}
+```{r}
+# fit error model
+fit_resid <- Arima(fit_df$.resid,
+      order = c(2, 0, 0),
+      include.mean = F,
+      method = 'ML')
+```
+
+Obtaining the theoretical autocorrelation and comparing it with the sample:
+```{r}
+resid_acf_fitted <- ARMAacf(ar = coef(fit_resid), 
+                            lag.max = 25)
+
+plot(resid_acf, main = '')
+lines(resid_acf_fitted, col = 'red')
+```
+
+We can forecast on this model using the predict() function.
+```{r}
+predict(fit_resid, n.ahead = 5)
+```
+
+We can also use the forecast package to get predictions that are returned more neatly.
+```{r}
+forecast(fit_resid, h = 5)
+```
+
+
+\section*{Regression with AR Errors}
+```{r}
+# determine a point at which to cut the series
+cutpt <- nrow(xreg) - 30
+
+# training series
+y_train <- y[1:cutpt]
+x_train <- xreg[1:cutpt, ]
+
+# fit the model
+fit_full <- Arima(y_train,
+                  order = c(2, 0, 0),
+                  xreg = x_train,
+                  include.mean = F,
+                  method = 'ML')
+
+broom::tidy(fit_full) %>% knitr::kable()
+```
+
+They are close, but not quite the same. The reason that they are different at all is because in previous models, we used AR parameters, while with this model, we did not use AR parameters.
+
+
+\section*{Forecasts}
+```{r}
+# testing series
+y_test <- y[(cutpt + 1):nrow(xreg)]
+x_test <- xreg[(cutpt + 1):nrow(xreg), ]
+
+preds <- forecast(fit_full, 
+                  h = nrow(x_test), 
+                  xreg = x_test)
+
+preds %>% as_tibble() %>% head()
+```
+
+Plotting the forecasts by binding the fitted values and predictions with the original data, and visualizing:
+```{r}
+fig_forecast <- site_data %>%
+  dplyr::select(date, temp) %>%
+  bind_cols(pred = c(fit_full$fitted, preds$mean),
+            status = c(rep('obs', nrow(x_train)),
+                       rep('pred', nrow(x_test)))) %>%
+  filter(date >= ymd('2018-01-01')) %>% # adjust if needed
+  ggplot(aes(x = date)) +
+  geom_path(aes(y = temp, linetype = status)) +
+  geom_path(aes(y = pred), color = 'blue', alpha = 0.5)
+
+fig_forecast
+```
+
+
+Getting the confidence interval.
+```{r}
+ci_df <- site_data %>% 
+  slice_tail(n = nrow(x_test)) %>% 
+  dplyr::select(date) %>%
+  bind_cols(lwr = preds$lower[, 2],
+            upr = preds$upper[, 2])
+
+fig_forecast +
+  geom_ribbon(aes(x = date, ymin = lwr, ymax = upr),
+              alpha = 0.3, fill = 'blue',
+              data = ci_df)
+```
+
+\section*{Action}
+Remaking the plot of the forecasts with uncertainty quantification and zooming in on the forecasted region (by filtering out more of the dates when creating the base layer fig_forecast).
+```{r}
+fig_forecast <- site_data %>%
+  dplyr::select(date, temp) %>%
+  bind_cols(pred = c(fit_full$fitted, preds$mean),
+            status = c(rep('obs', nrow(x_train)),
+                       rep('pred', nrow(x_test)))) %>%
+  filter(date >= ymd('2018-12-01')) %>% # adjust if needed
+  ggplot(aes(x = date)) +
+  geom_path(aes(y = temp, linetype = status)) +
+  geom_path(aes(y = pred), color = 'blue', alpha = 0.5)
+
+ci_df <- site_data %>% 
+  slice_tail(n = nrow(x_test)) %>% 
+  dplyr::select(date) %>%
+  bind_cols(lwr = preds$lower[, 2],
+            upr = preds$upper[, 2])
+
+fig_forecast +
+  geom_ribbon(aes(x = date, ymin = lwr, ymax = upr),
+              alpha = 0.3, fill = 'blue',
+              data = ci_df)
+```
+
+1) The forecasts seem to be pretty good directly after the cutoff value, but drop off very quickly (after around a week).
+
+2) The uncertainy for longer term forecasts seems to increase, as can be seen by the widening confidence bands. However, it seems like the confidence bands hit a plateau after a while, and stay constant in their uncertainty.
+
+
+
+
+
+
