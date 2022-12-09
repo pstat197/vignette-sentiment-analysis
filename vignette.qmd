@@ -21,7 +21,7 @@ There exist various lexicons (or dictionaries) that are used to evaluate the emo
 Assigns one single word with a numeric value between -5 and 5. Values in the negative range are words with a negative connotation. Those in the positive range are words with a positive connotation. The numeric values also have a degree, for example, positive ranges from 1 to 5, 5 being most positive and 1 being least positive.
 
 ```{r}
-.libPaths("C:/Users/tommy/AppData/Local/R/win-library/4.2")
+# .libPaths("C:/Users/tommy/AppData/Local/R/win-library/4.2")
 library(textdata)
 library(tidytext)
 get_sentiments("afinn")
@@ -253,7 +253,7 @@ afinn_score <- dataset_clean$afinn_score
 corrplot(cor(data.frame(length, afinn_score)), type = "lower", method = "shade")
 ```
 
-In this corrplot, we how the length of each review effects the AFINN score of the review. Although our variables have a slight negative correlation, our corrplot shows us that review length does not affect AFINN score as they are not strongly correlated. 
+In this correlation plot, we show how the length of each review affects its AFINN score. Although our variables have a slight negative correlation with each other, review length does not seem to strongly affect AFINN score.
 
 ##### Distribution of Sentiment Scores Among Reviews
 
@@ -358,7 +358,7 @@ treemap(first_20, # dataframe
 
 ##### Word Clouds
 
-Using each sentiment analysis model dataframe, we can count every instance of a word and create wordcloud of the most popular words recognized from every model's corresponding library.
+Using each sentiment analysis model dataframe, we can count every instance of a word and create word clouds of the most popular words recognized from every model's corresponding library.
 
 ##### Bing Word Cloud
 
